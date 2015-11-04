@@ -18,7 +18,6 @@ package de.pi3g.pi.ws2812;
 
 import com.sun.jna.Library;
 import com.sun.jna.Native;
-import com.sun.jna.Structure;
 import java.awt.Color;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -26,8 +25,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.Files;
-import java.util.Arrays;
-import java.util.List;
 
 /**
  * A simple Java wrapper around the WS2812 library by Pimoroni
@@ -113,7 +110,11 @@ public final class WS2812 {
      */
     public Color getPixelColor(int index) {
         Color_t color = iface.getPixelColor(index);
-        return new Color(color.r & 0xFF, color.g & 0xFF, color.b & 0xFF);
+        if (color != null) {
+            return new Color(color.r & 0xFF, color.g & 0xFF, color.b & 0xFF);
+        } else {
+            return Color.BLACK;
+        }
     }
 
     /**
@@ -143,20 +144,6 @@ public final class WS2812 {
         iface.terminate(0);
     }
 
-    private static class Color_t extends Structure {
-
-        public byte r;
-        public byte g;
-        public byte b;
-
-        @Override
-        protected List<String> getFieldOrder() {
-            return Arrays.asList(new String[]{
-                "r", "g", "b"
-            });
-        }
-
-    }
 
     public static synchronized WS2812 get() {
         if (INSTANCE == null) {
@@ -218,7 +205,7 @@ public final class WS2812 {
          */
         byte setPixelColor(int pixel, byte r, byte g, byte b);
 
-        Color_t getPixelColor(int index);
+        Color_t.ByValue getPixelColor(int index);
 
         /**
          * actually propergates the changes made to the pixels to the real LEDs.
